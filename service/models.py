@@ -46,6 +46,7 @@ def init_db(app):
 
 
 class DataValidationError(Exception):
+
     """Used for an data validation errors when deserializing"""
 
 
@@ -56,6 +57,7 @@ class Category(Enum):
     CLOTHS = 1
     FOOD = 2
     HOUSEWARES = 3
+
     AUTOMOTIVE = 4
     TOOLS = 5
 
@@ -205,31 +207,21 @@ class Product(db.Model):
 
     @classmethod
     def find_by_price(cls, price: Decimal) -> list:
-        """Returns all Products with the given price
-
-        :param price: the price to search for
-        :type name: float
-
-        :return: a collection of Products with that price
-        :rtype: list
-
-        """
+        """Returns all Products with the given price"""
         logger.info("Processing price query for %s ...", price)
-        price_value = price
-        if isinstance(price, str):
-            price_value = Decimal(price.strip(' "'))
+        try:
+            price_value = Decimal(str(price).strip(' "'))
+        except Exception:
+            raise DataValidationError(f"Invalid price value: {price}")
         return cls.query.filter(cls.price == price_value)
 
     @classmethod
     def find_by_availability(cls, available: bool = True) -> list:
         """Returns all Products by their availability
-
         :param available: True for products that are available
         :type available: str
-
         :return: a collection of Products that are available
         :rtype: list
-
         """
         logger.info("Processing available query for %s ...", available)
         return cls.query.filter(cls.available == available)
